@@ -92,7 +92,7 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -s 0.05 -o - !{psg} | samdemux.pl !{B} $dir
+  samtools view -h -o - !{psg} | samdemux.pl !{B} $dir
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
