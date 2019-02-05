@@ -1,8 +1,8 @@
 
 
 /*
-  Function:
-    Demux a large bam file on its cell-barcode file (CB).
+  Purpose:
+    Demux a large bam file on its cell-barcode field (CB).
     The bam file is likely derived from a droplet-based method.
     Then apply simple QC to each of the subsamples.
 
@@ -19,7 +19,7 @@
   
   Todo:
     - (mid term) Try use GNU parallel for bam conversion.
-       a. split/script code
+       a. write code as function; export -f function
        b. find recent parallel
     - (long term): enable read_distribution.py to read multiple bam files.
       Reading the bed file takes several 10s of seconds; it is painful.
@@ -37,11 +37,13 @@ Channel.fromPath(params.samplefile)
 
 
 process get_data {
+  tag "${samplename}"
+
   input:
   val samplename from ch_samplelist.flatMap { it.readLines() }
 
   output:
-  set val(samplename), file('bcd*'), file('psg*') into ch_input
+  set val(samplename), file('bcd-*'), file('psg-*') into ch_input
 
   shell:
   '''
@@ -53,9 +55,12 @@ process get_data {
 }
 
 
-      // output [samplename, TAGC, somedir/tagc]
-      // need channel transform for that.
+      // Main output follows pattern demux-$samplename/{ACGT,CGTG}/,
+      // These are directories/buckets; inside the buckets there
+      // is a number of bam files, for which the corresponding bar
+      // code hashes to the bucket tag.
 process demux_bam {
+  tag "${samplename}"
 
   input:
   set val(samplename), file(bcd), file(psg) from ch_input
@@ -72,7 +77,7 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -o - !{psg} | head -n 100000 | samdemux.pl !{B} $dir
+  samtools view -h -s 0.05 -o - !{psg} | samdemux.pl !{B} $dir
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
@@ -97,6 +102,7 @@ ch_demux
 
 
 process sampleinfo {
+  tag "${samplename}-${tagc}"
 
                   // tagc is a subset of barcode bases. It could be a 3, 4 or 5-base tag,
                   // although the same length within a single run.
