@@ -32,6 +32,21 @@ params.bed = '/nfs/cellgeni/cellranger/refdata-cellranger-GRCh38-1.2.0/genes/gen
 params.outdir = 'QC'
 
 
+// Header log info
+log.info "========================================="
+log.info "         cbdemux pipeline v1"
+log.info "========================================="
+def summary = [:]
+summary['Output dir']     = params.outdir
+summary['Working dir']    = workflow.workDir
+summary['Current home']   = "$HOME"
+summary['Current path']   = "$PWD"
+summary['Script dir']     = workflow.projectDir
+summary['Config Profile'] = workflow.profile
+log.info summary.collect { k,v -> "${k.padRight(15)}: $v" }.join("\n")
+log.info "========================================="
+
+
 Channel.fromPath(params.samplefile)
   .set { ch_samplelist }
 
