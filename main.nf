@@ -1,12 +1,28 @@
 
 
 /*
-   . (mid term) Try use GNU parallel for bam conversion.
-     a. split/script code
-     b. find recent parallel
-   . (long term): enable read_distribution.py to read multiple bam files.
-     Reading the bed file takes several 10s of seconds; it is painful.
+  Function:
+    Demux a large bam file on its cell-barcode file (CB).
+    The bam file is likely derived from a droplet-based method.
+    Then apply simple QC to each of the subsamples.
 
+  Design:
+    The demuxing step is IO and storage intensive (many files, adding up to
+    lots of disk space). It is currently done on a single CPU; additionally
+    conversion to bam files is done in the same process and sequentially.  The
+    way to speed this up is probably to use GNU parallel and use more CPUs in
+    the same job.
+
+    This design is to make sure that no sam files remain in the work directory.
+    We do not spawn pipes from the main demuxing program (i.e. write bam directly
+    instead of sam) as (tens of) thousands of such pipes are required.
+  
+  Todo:
+    - (mid term) Try use GNU parallel for bam conversion.
+       a. split/script code
+       b. find recent parallel
+    - (long term): enable read_distribution.py to read multiple bam files.
+      Reading the bed file takes several 10s of seconds; it is painful.
 */
 
 
@@ -56,7 +72,7 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -o - !{psg} | head -n 400000 | samdemux.pl !{B} $dir
+  samtools view -h -o - !{psg} | head -n 100000 | samdemux.pl !{B} $dir
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
@@ -125,11 +141,11 @@ process merge_distr {
   set val(samplename), file(thefiles) from ch_merge
 
   output:
-  file("*.qc.txt")
+  file("*.distr.txt")
 
   shell:
   '''
-  (parse_read_distribution.pl --header; cat !{thefiles} | sort) > !{samplename}.qc.txt
+  (parse_read_distribution.pl --header; cat !{thefiles} | sort) > !{samplename}.distr.txt
   '''
 }
 
