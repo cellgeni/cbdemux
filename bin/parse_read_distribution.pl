@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 #
 # Purpose: change the output of read_distribution.py into field-structured data.
