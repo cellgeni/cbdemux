@@ -140,7 +140,7 @@ process sampleinfo {
   while read bam; do
     bcd=$(basename $bam .bam)
 
-    if read_distribution.py  -i $bam -r !{params.bed} | $baseDir/bin/parse_read_distribution.pl $bcd > ttt.txt; then
+    if read_distribution.py  -i $bam -r !{params.bed} | !{baseDir}/bin/parse_read_distribution.pl $bcd > ttt.txt; then
       cat ttt.txt >> $outfile
     else
       echo "readdistr !{S} !{T} $bcd" >> "!{S}-distr-error.txt"
@@ -166,7 +166,7 @@ process merge_distr {
 
   shell:
   '''
-  ($baseDir/bin/parse_read_distribution.pl --header; cat !{thefiles} | sort) > !{samplename}.distr.txt
+  (!{baseDir}/bin/parse_read_distribution.pl --header; cat !{thefiles} | sort) > !{samplename}.distr.txt
   '''
 }
 
