@@ -128,7 +128,7 @@ process sampleinfo {
 
   output:
   set val(samplename), file("*-${tagc}.distr") into ch_distr
-  file('*-error.txt') into ch_err_distr
+  file('*-error.txt') optional true into ch_err_distr
 
   shell:
   S = samplename
