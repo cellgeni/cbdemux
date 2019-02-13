@@ -64,8 +64,8 @@ process get_data {
   '''
   bcd="!{params.indir}/bcd-!{samplename}.tsv"
   psg="!{params.indir}/psg-!{samplename}.bam"
-  ln -s $bcd .
-  ln -s $psg .
+  ln -sf $bcd .
+  ln -sf $psg .
   '''
 }
 
