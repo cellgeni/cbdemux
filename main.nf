@@ -82,7 +82,7 @@ process demux_bam {
 
             // Output second level is a 4-base tag, e.g. ACGT.
   output:
-  set val(samplename), file("demux-$samplename/*") into ch_demux
+  set val(samplename), file("demux-$samplename/????") into ch_demux
   file('*-demux-error.txt') optional true into ch_err_demux
 
   shell:
@@ -92,7 +92,7 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -o - !{psg} | samdemux.pl !{B} $dir
+  samtools view -h -o - !{P} | samdemux.pl !{B} $dir
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
