@@ -30,6 +30,7 @@ params.indir = "."
 params.samplefile = "no-sample-file"
 params.bed = '/nfs/cellgeni/cellranger/refdata-cellranger-GRCh38-1.2.0/genes/genes.gtf2bed.bed'
 params.outdir = 'QC'
+params.ntest = 0
 
 
 // Header log info
@@ -92,7 +93,7 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -o - !{P} | samdemux.pl !{B} $dir
+  samtools view -h -o - !{P} | samdemux.pl --barcodefile=!{B} --outdir=$dir --ntest=!{params.ntest}
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
