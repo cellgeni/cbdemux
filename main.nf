@@ -93,7 +93,12 @@ process demux_bam {
   '''
   dir="demux-!{S}"
   mkdir -p $dir
-  samtools view -h -o - !{P} | samdemux.pl --barcodefile=!{B} --outdir=$dir --ntest=!{params.ntest}
+  if (( !{params.ntest} > 0 )); then
+    # this is to avoid the SIGPIPE error
+    samtools view -h -o - !{P} | samdemux.pl --barcodefile=!{B} --outdir=$dir --ntest=!{params.ntest} || [[ $? == 141 ]]
+  else
+    samtools view -h -o - !{P} | samdemux.pl --barcodefile=!{B} --outdir=$dir
+  fi
 
                           # ideally we'd GNU parallel this a bit.
   while read sam; do
